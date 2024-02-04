@@ -8,14 +8,15 @@ pub grammar parser() for str {
 rule _ =  [' ' | '\t' | '\r' | '\n']*
 
 pub rule ast() -> AST
-    = pt()
-    / add()
+    = _ v: add() _ { v }
+    / _ v: pt()  _ { v }
+    / _ v: nth() _ { v }
 
 rule pt() -> AST
-    = psi()
-    / zero()
-    / one()
-    / omega()
+    = _ v: zero()  _ { v }
+    / _ v: one()   _ { v }
+    / _ v: omega() _ { v }
+    / _ v: psi()   _ { v }
 
 rule zero() -> AST
     = "0" { AST::zero() }
@@ -30,7 +31,10 @@ rule psi() -> AST
     = "p" _ "(" _ l: ast() _ "," _ r: ast() _ ")" { AST::Psi(l.to_box(), r.to_box()) }
 
 rule add() -> AST
-    = l: pt() _ r: ast() { AST::Add(l.to_box(), r.to_box()) }
+    = l: pt() _ "+" _ r: ast() { AST::Add(l.to_box(), r.to_box()) }
+
+rule nth() -> AST
+    = b: pt() "[" i: ast() "]" { AST::Nth(b.to_box(), i.to_box()) }
 
 }
 }
