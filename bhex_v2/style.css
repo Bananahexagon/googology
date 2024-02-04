@@ -1,8 +1,0 @@
-body {
-    display: flex;
-    flex-direction: column;
-}
-
-textarea {
-    height: 10rem;
-}
