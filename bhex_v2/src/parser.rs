@@ -19,13 +19,13 @@ rule pt() -> AST
     / _ v: psi()   _ { v }
 
 rule zero() -> AST
-    = "0" { AST::zero() }
+    = "0" { AST::Zero }
 
 rule one() -> AST
     = "1" { AST::one() }
 
 rule omega() -> AST
-    = "w" { AST::Psi(AST::zero().to_box(), AST::one().to_box()) }
+    = "w" { AST::Psi(AST::Zero.to_box(), AST::one().to_box()) }
 
 rule psi() -> AST
     = "p" _ "(" _ l: ast() _ "," _ r: ast() _ ")" { AST::Psi(l.to_box(), r.to_box()) }

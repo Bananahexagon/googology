@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum AST {
     Psi(Box<AST>, Box<AST>),
     Add(Box<AST>, Box<AST>),
@@ -7,11 +7,8 @@ pub enum AST {
 }
 
 impl AST {
-    pub fn zero() -> AST {
-        AST::Zero
-    }
     pub fn one() -> AST {
-        AST::Psi(AST::zero().to_box(), AST::zero().to_box())
+        AST::Psi(AST::Zero.to_box(), AST::Zero.to_box())
     }
     pub fn to_box(self) -> Box<Self> {
         Box::new(self)
