@@ -1,16 +1,23 @@
 use peg;
 
 use crate::types::*;
+use crate::util::Either;
 
 peg::parser! {
 pub grammar parser() for str {
 
 rule _ =  [' ' | '\t' | '\r' | '\n']*
 
-pub rule ast() -> AST
+pub rule code() -> Either<AST, (AST, AST)>
+    = a: ast() { Either::Left(a)}
+    / n: nth() { Either::Right(n)}
+
+rule nth() -> (AST, AST)
+    = b: pt() "[" i: ast() "]" { (b, i) }
+
+rule ast() -> AST
     = _ v: add() _ { v }
     / _ v: pt()  _ { v }
-    / _ v: nth() _ { v }
 
 rule pt() -> AST
     = _ v: zero()  _ { v }
@@ -32,9 +39,6 @@ rule psi() -> AST
 
 rule add() -> AST
     = l: pt() _ "+" _ r: ast() { AST::Add(l.to_box(), r.to_box()) }
-
-rule nth() -> AST
-    = b: pt() "[" i: ast() "]" { AST::Nth(b.to_box(), i.to_box()) }
 
 }
 }
