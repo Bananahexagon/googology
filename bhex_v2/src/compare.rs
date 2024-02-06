@@ -1,6 +1,6 @@
 use crate::types::AST;
 
-pub fn le(l: &AST, r: &AST) -> bool {
+pub fn _le(l: &AST, r: &AST) -> bool {
     l == r || lt(l, r)
 }
 

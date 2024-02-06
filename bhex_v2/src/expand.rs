@@ -29,8 +29,25 @@ pub fn nth(body: AST, n: AST) -> AST {
             } else {
                 if lt(&dom(&b), &body) {
                     AST::Psi(a.to_box(), nth(*b, n).to_box())
-                } else if let AST::Psi(_c, _) = dom(&b) {
-                    unimplemented!()
+                } else if let AST::Psi(c, _) = dom(&b) {
+                    match (n.to_number(), nth(body, nth(n, AST::Zero))) {
+                        (Some(m), AST::Psi(d, g)) if m != 0 && a == d => AST::Psi(
+                            a,
+                            nth(
+                                *b,
+                                AST::Psi(nth(*c, AST::Zero).to_box(), g),
+                            )
+                            .to_box(),
+                        ),
+                        _ => AST::Psi(
+                            a,
+                            nth(
+                                *b,
+                                AST::Psi(nth(*c, AST::Zero).to_box(), AST::Zero.to_box()),
+                            )
+                            .to_box(),
+                        ),
+                    }
                 } else {
                     unreachable!()
                 }

@@ -4,15 +4,15 @@ pub enum Either<L, R> {
 }
 
 impl<L, R> Either<L, R> {
-    pub fn left(self) -> Option<L> {
+    pub fn _left(self) -> Option<L> {
         match self {
             Self::Left(l) => Some(l),
-            Self::Right(r) => None,
+            Self::Right(_) => None,
         }
     }
-    pub fn right(self) -> Option<R> {
+    pub fn _right(self) -> Option<R> {
         match self {
-            Self::Left(l) => None,
+            Self::Left(_) => None,
             Self::Right(r) => Some(r),
         }
     }

@@ -19,7 +19,7 @@ pub unsafe fn expand(code: &str) -> String {
             return parsed.err().unwrap();
         }
     };
-    ast.to_json()
+    ast.to_string()
 }
 
 fn parse(code: &str) -> Result<AST, String> {
