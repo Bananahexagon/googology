@@ -1,36 +1,36 @@
 use crate::{compare::lt, types::AST};
 
-pub fn nth(body: AST, n: AST) -> AST {
-    match body.clone() {
+pub fn nth(s: AST, t: AST) -> AST {
+    match s.clone() {
         AST::Zero => AST::Zero,
-        AST::Add(l, r) => {
-            if *r == AST::Zero {
-                *l
+        AST::Add(a, b) => {
+            if *b == AST::Zero {
+                *a
             } else {
-                AST::Add(l, nth(*r, n).to_box())
+                AST::Add(a, nth(*b, t).to_box())
             }
         }
         AST::Psi(a, b) => {
             if dom(&b) == AST::Zero {
                 if dom(&a) == AST::Zero || dom(&a) == AST::one() {
-                    n
+                    t
                 } else {
-                    AST::Psi(nth(*a, n).to_box(), AST::Zero.to_box())
+                    AST::Psi(nth(*a, t).to_box(), AST::Zero.to_box())
                 }
             } else if dom(&b) == AST::one() {
-                if n.is_successor() {
+                if t.is_successor() {
                     AST::Add(
-                        nth(body.clone(), nth(n, AST::Zero)).to_box(),
-                        nth(body, AST::one()).to_box(),
+                        nth(s.clone(), nth(t, AST::Zero)).to_box(),
+                        nth(s, AST::one()).to_box(),
                     )
                 } else {
                     AST::Psi(a.to_box(), nth(*b, AST::Zero).to_box())
                 }
             } else {
-                if lt(&dom(&b), &body) {
-                    AST::Psi(a.to_box(), nth(*b, n).to_box())
+                if lt(&dom(&b), &s) {
+                    AST::Psi(a.to_box(), nth(*b, t).to_box())
                 } else if let AST::Psi(c, _) = dom(&b) {
-                    match (n.to_number(), nth(body, nth(n, AST::Zero))) {
+                    match (t.to_number(), nth(s, nth(t, AST::Zero))) {
                         (Some(m), AST::Psi(d, g)) if m != 0 && a == d => AST::Psi(
                             a,
                             nth(
@@ -59,19 +59,19 @@ pub fn nth(body: AST, n: AST) -> AST {
 fn dom(ast: &AST) -> AST {
     match ast {
         AST::Zero => AST::Zero,
-        AST::Add(_, r) => dom(r),
-        AST::Psi(l, r) => {
-            if dom(r) == AST::Zero {
-                if dom(l) == AST::Zero || dom(l) == AST::one() {
+        AST::Add(_, b) => dom(b),
+        AST::Psi(a, b) => {
+            if dom(b) == AST::Zero {
+                if dom(a) == AST::Zero || dom(a) == AST::one() {
                     ast.clone()
                 } else {
-                    dom(r)
+                    dom(b)
                 }
-            } else if dom(r) == AST::one() {
+            } else if dom(b) == AST::one() {
                 AST::omega()
             } else {
-                if lt(&dom(r), ast) {
-                    dom(r)
+                if lt(&dom(b), ast) {
+                    dom(b)
                 } else {
                     AST::omega()
                 }

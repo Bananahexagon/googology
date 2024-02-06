@@ -6,10 +6,10 @@ use crate::util::Either;
 peg::parser! {
 pub grammar parser() for str {
 
-rule _ =  [' ' | '\t' | '\r' | '\n']*
+rule _ = [' ' | '\t' | '\r']*
 
 pub rule codes() -> Vec<Either<AST, (AST, AST)>>
-    = c: code() ** ( _ "\n" _ ) { c }
+    = c: code() ** ( _ "\n"+ _ ) { c }
 
 rule code() -> Either<AST, (AST, AST)>
     = n: nth() { Either::Right(n)}

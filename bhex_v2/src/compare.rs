@@ -1,6 +1,6 @@
 use crate::types::AST;
 
-pub fn _le(l: &AST, r: &AST) -> bool {
+pub fn le(l: &AST, r: &AST) -> bool {
     l == r || lt(l, r)
 }
 
@@ -19,9 +19,9 @@ pub fn lt(l: &AST, r: &AST) -> bool {
         }
     } else if let AST::Psi(a, b) = l {
         if let AST::Add(c, _) = r {
-            lt(l, c)
+            le(l, c)
         } else if let AST::Psi(c, d) = r {
-            (*a == *c && lt(b, d)) || lt(a, c)
+            (a == c && lt(b, d)) || lt(a, c)
         } else {
             unreachable!()
         }
