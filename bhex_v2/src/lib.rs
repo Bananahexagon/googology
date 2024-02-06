@@ -1,7 +1,7 @@
+mod compare;
+mod expand;
 mod parser;
 mod types;
-mod expand;
-mod compare;
 mod util;
 
 use expand::nth;
@@ -11,23 +11,31 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub unsafe fn expand(code: &str) -> String {
-    let ast = {
-        let parsed = parse(code);
-        if let Ok(ast) = parsed {
+    let asts = {
+        let expanded = main(code);
+        if let Ok(ast) = expanded {
             ast
         } else {
-            return parsed.err().unwrap();
+            return expanded.err().unwrap();
         }
     };
-    ast.to_string()
+    let mut r = String::new();
+    for ast in asts {
+        r.push_str(&format!("{}\n", ast.to_string()))
+    }
+    r
 }
 
-fn parse(code: &str) -> Result<AST, String> {
-    if let Ok(ast) = parser::parser::code(code) {
-        Ok(match ast {
-            Either::Left(ast) => ast,
-            Either::Right((b, n)) => nth(b, n)
-        })
+fn main(code: &str) -> Result<Vec<AST>, String> {
+    if let Ok(asts) = parser::parser::codes(code) {
+        let mut r = Vec::new();
+        for ast in asts {
+            r.push(match ast {
+                Either::Left(a) => a,
+                Either::Right((b, n)) => nth(b, n),
+            })
+        }
+        Ok(r)
     } else {
         Err("parse error".to_string())
     }

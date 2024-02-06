@@ -8,12 +8,15 @@ pub grammar parser() for str {
 
 rule _ =  [' ' | '\t' | '\r' | '\n']*
 
-pub rule code() -> Either<AST, (AST, AST)>
-    = a: ast() { Either::Left(a)}
-    / n: nth() { Either::Right(n)}
+pub rule codes() -> Vec<Either<AST, (AST, AST)>>
+    = c: code() ** ( _ "\n" _ ) { c }
+
+rule code() -> Either<AST, (AST, AST)>
+    = n: nth() { Either::Right(n)}
+    / a: ast() { Either::Left(a)}
 
 rule nth() -> (AST, AST)
-    = b: pt() "[" i: ast() "]" { (b, i) }
+    = b: pt() "[" _ i: ast() _ "]" { (b, i) }
 
 rule ast() -> AST
     = _ v: add() _ { v }
