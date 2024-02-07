@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "bhex_v2"
+name = "bhex_v1"
 version = "0.1.0"
 dependencies = [
  "peg",

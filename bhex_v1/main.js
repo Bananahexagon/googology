@@ -1,5 +1,5 @@
 
-import init, { expand } from "./pkg/bhex_v2.js";
+import init, { expand } from "./pkg/bhex_v1.js";
 
 init().then(() => {
     const input = document.querySelector("#input");

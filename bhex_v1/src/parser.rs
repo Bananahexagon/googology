@@ -26,9 +26,11 @@ rule ast() -> AST
 
 rule pt() -> AST
     = _ v: integer()  _ { v }
-    / _ v: omega() _ { v }
-    / _ v: aleph() _ { v }
-    / _ v: psi()   _ { v }
+    / _ v: omega()    _ { v }
+    / _ v: aleph()    _ { v }
+    / _ v: psi()      _ { v }
+    / _ v: mahlo_f()  _ { v }
+    / _ v: mahlo()    _ { v }
 
 rule integer() -> AST
     = n: $(['0'] / (['1'..='9']['0'..='9']*)) {
@@ -36,13 +38,19 @@ rule integer() -> AST
     }
 
 rule omega() -> AST
-    = "w" { AST::Psi(AST::Zero.to_box(), AST::one().to_box()) }
+    = "w" { AST::omega() }
 
 rule aleph() -> AST
-    = "O" { AST::Psi(AST::one().to_box(), AST::Zero.to_box()) }
+    = "O" { AST::aleph() }
+
+rule mahlo() -> AST
+    = "O" { AST::Mahlo(AST::one().to_box()) }
 
 rule psi() -> AST
-    = "p" _ "(" _ l: ast() _ "," _ r: ast() _ ")" { AST::Psi(l.to_box(), r.to_box()) }
+    = "p" _ "(" _ a: ast() _ ")" { AST::Psi(a.to_box()) }
+
+rule mahlo_f() -> AST
+    = "p" _ "(" _ a: ast() _ ")" { AST::Mahlo(a.to_box()) }
 
 rule add() -> AST
     = l: pt() _ "+" _ r: ast() { AST::Add(l.to_box(), r.to_box()) }
