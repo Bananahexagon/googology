@@ -48,27 +48,25 @@ impl AST {
     }
     pub fn is_successor(&self) -> bool {
         if let Self::Add(_, r) = self {
-            **r == AST::Zero || r.is_successor()
+            **r == AST::one() || r.is_successor()
         } else {
             false
         }
     }
-    pub fn to_number(&self) -> Option<u32> {
-        match self {
-            Self::Zero => Some(0),
-            Self::Psi(l, r) if (l, r) == (&AST::Zero.to_box(), &AST::Zero.to_box()) => Some(1),
-            Self::Add(l, r) => {
-                if let Some(n) = l.to_number() {
-                    if *r == AST::one().to_box() {
-                        Some(n + 1)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            }
-            _ => None,
+    pub fn is_non_zero(&self) -> bool {
+        if let Self::Add(l, r) = self {
+            **l == AST::one() || r.is_non_zero()
+        } else if self == &AST::one() {
+            true
+        } else {
+            false
+        }
+    }
+    pub fn from_int(n: u32) -> Self {
+        match n {
+            0 => AST::Zero,
+            1 => AST::one(),
+            n => AST::Add(AST::one().to_box(), Self::from_int(n - 1).to_box()),
         }
     }
 }

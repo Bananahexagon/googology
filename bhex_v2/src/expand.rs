@@ -7,7 +7,12 @@ pub fn nth(s: AST, t: AST) -> AST {
             if *b == AST::Zero {
                 *a
             } else {
-                AST::Add(a, nth(*b, t).to_box())
+                let r = nth(*b, t);
+                if r == AST::Zero {
+                    *a
+                } else {
+                    AST::Add(a, r.to_box())
+                }
             }
         }
         AST::Psi(a, b) => {
@@ -19,10 +24,12 @@ pub fn nth(s: AST, t: AST) -> AST {
                 }
             } else if dom(&b) == AST::one() {
                 if t.is_successor() {
-                    AST::Add(
-                        nth(s.clone(), nth(t, AST::Zero)).to_box(),
-                        nth(s, AST::one()).to_box(),
-                    )
+                    let r = nth(s.clone(), AST::one());
+                    if r == AST::Zero {
+                        nth(s, nth(t, AST::Zero))
+                    } else {
+                        AST::Add(nth(s, nth(t, AST::Zero)).to_box(), r.to_box())
+                    }
                 } else {
                     AST::Psi(a.to_box(), nth(*b, AST::Zero).to_box())
                 }
@@ -30,14 +37,10 @@ pub fn nth(s: AST, t: AST) -> AST {
                 if lt(&dom(&b), &s) {
                     AST::Psi(a.to_box(), nth(*b, t).to_box())
                 } else if let AST::Psi(c, _) = dom(&b) {
-                    match (t.to_number(), nth(s, nth(t, AST::Zero))) {
-                        (Some(m), AST::Psi(d, g)) if m != 0 && a == d => AST::Psi(
+                    match (t.is_non_zero(), nth(s, nth(t, AST::Zero))) {
+                        (true, AST::Psi(d, g)) if a == d => AST::Psi(
                             a,
-                            nth(
-                                *b,
-                                AST::Psi(nth(*c, AST::Zero).to_box(), g),
-                            )
-                            .to_box(),
+                            nth(*b, AST::Psi(nth(*c, AST::Zero).to_box(), g)).to_box(),
                         ),
                         _ => AST::Psi(
                             a,
