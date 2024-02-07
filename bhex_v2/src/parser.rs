@@ -27,6 +27,7 @@ rule ast() -> AST
 rule pt() -> AST
     = _ v: integer()  _ { v }
     / _ v: omega() _ { v }
+    / _ v: aleph() _ { v }
     / _ v: psi()   _ { v }
 
 rule integer() -> AST
@@ -36,6 +37,9 @@ rule integer() -> AST
 
 rule omega() -> AST
     = "w" { AST::Psi(AST::Zero.to_box(), AST::one().to_box()) }
+
+rule aleph() -> AST
+    = "O" { AST::Psi(AST::one().to_box(), AST::Zero.to_box()) }
 
 rule psi() -> AST
     = "p" _ "(" _ l: ast() _ "," _ r: ast() _ ")" { AST::Psi(l.to_box(), r.to_box()) }

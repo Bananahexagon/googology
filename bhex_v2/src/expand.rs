@@ -37,19 +37,30 @@ pub fn nth(s: AST, t: AST) -> AST {
                 if lt(&dom(&b), &s) {
                     AST::Psi(a.to_box(), nth(*b, t).to_box())
                 } else if let AST::Psi(c, _) = dom(&b) {
-                    match (t.is_non_zero(), nth(s, nth(t, AST::Zero))) {
-                        (true, AST::Psi(d, g)) if a == d => AST::Psi(
-                            a,
-                            nth(*b, AST::Psi(nth(*c, AST::Zero).to_box(), g)).to_box(),
-                        ),
-                        _ => AST::Psi(
+                    if t.is_non_zero() {
+                        match nth(s, nth(t, AST::Zero)) {
+                            AST::Psi(d, g) if a == d => AST::Psi(
+                                a,
+                                nth(*b, AST::Psi(nth(*c, AST::Zero).to_box(), g)).to_box(),
+                            ),
+                            _ => AST::Psi(
+                                a,
+                                nth(
+                                    *b,
+                                    AST::Psi(nth(*c, AST::Zero).to_box(), AST::Zero.to_box()),
+                                )
+                                .to_box(),
+                            ),
+                        }
+                    } else {
+                        AST::Psi(
                             a,
                             nth(
                                 *b,
                                 AST::Psi(nth(*c, AST::Zero).to_box(), AST::Zero.to_box()),
                             )
                             .to_box(),
-                        ),
+                        )
                     }
                 } else {
                     unreachable!()
