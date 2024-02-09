@@ -97,9 +97,15 @@ pub fn dom(ast: &AST) -> AST {
         AST::Zero => AST::Zero,
         AST::Add(_, b) => dom(b),
         AST::Psi(a) => {
-            if a == &AST::Zero.to_box() || a == &AST::mahlo().to_box() {
+            if a == &AST::Zero.to_box() || dom(a) == AST::mahlo() {
                 ast.clone()
-            } else if dom(&a) == AST::one() {
+            } else if dom(&a) == AST::one()
+                || (if let Some((_, r)) = a.clone().t_and_pt() {
+                    dom(a) == r && r != AST::mahlo()
+                } else {
+                    dom(a) == **a && **a != AST::mahlo()
+                })
+            {
                 AST::omega()
             } else {
                 dom(a)
