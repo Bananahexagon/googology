@@ -38,7 +38,13 @@ pub fn nth(s: AST, t: AST) -> AST {
                         if t.is_non_zero() {
                             match nth(s, nth(t, AST::Zero)) {
                                 AST::Psi(g) => {
-                                    r = Some(if let Some((c, _)) = a.clone().t_and_pt() {
+                                    let ar = if let Some((_, r)) = a.clone().t_and_pt() {
+                                        r
+                                    } else {
+                                        *a.clone()
+                                    };
+                                    let ai = if let AST::Psi(u) = ar {*u} else {unimplemented!()};
+                                    r = Some(if let Some((c, _)) = ai.clone().t_and_pt() {
                                         AST::Psi(
                                             AST::Add(
                                                 c.to_box(),
@@ -99,16 +105,12 @@ pub fn dom(ast: &AST) -> AST {
         AST::Psi(a) => {
             if a == &AST::Zero.to_box() || dom(a) == AST::mahlo() {
                 ast.clone()
-            } else if dom(&a) == AST::one()
-                || (if let Some((_, r)) = a.clone().t_and_pt() {
-                    dom(a) == r && r != AST::mahlo()
-                } else {
-                    dom(a) == **a && **a != AST::mahlo()
-                })
-            {
+            } else if dom(&a) == AST::one() {
                 AST::omega()
-            } else {
+            } else if lt(&dom(&a), ast) {
                 dom(a)
+            } else {
+                AST::omega()
             }
         }
         AST::Mahlo(a) => {
