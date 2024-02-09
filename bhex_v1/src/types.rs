@@ -31,14 +31,8 @@ impl AST {
                 a._to_json(),
                 b._to_json()
             ),
-            Self::Psi(a) => format!(
-                r#"{{ type: "psi", a: {} }}"#,
-                a._to_json(),
-            ),
-            Self::Mahlo(a) => format!(
-                r#"{{ type: "mahlo", a: {} }}"#,
-                a._to_json(),
-            ),
+            Self::Psi(a) => format!(r#"{{ type: "psi", a: {} }}"#, a._to_json(),),
+            Self::Mahlo(a) => format!(r#"{{ type: "mahlo", a: {} }}"#, a._to_json(),),
         }
     }
     pub fn to_string(&self) -> String {
@@ -54,16 +48,17 @@ impl AST {
                     } else if self == &AST::omega() {
                         "w".to_string()
                     } else if self == &AST::aleph() {
-                        "O".to_string()
+                        "W".to_string()
                     } else {
                         format!("p({})", a.to_string())
                     }
                 }
                 Self::Mahlo(a) => {
-                    if a == &AST::one().to_box() {
+                    if a == &AST::Zero.to_box() {
                         "M".to_string()
                     } else {
-                        format!("M({})", a.to_string())}
+                        format!("M({})", a.to_string())
+                    }
                 }
             }
         }
@@ -98,6 +93,23 @@ impl AST {
             Some(1)
         } else if self == &AST::Zero {
             Some(0)
+        } else {
+            None
+        }
+    }
+    pub fn t_and_pt(self) -> Option<(Self, Self)> {
+        if let AST::Add(_, _) = self {
+            let mut ls = None;
+            let mut t = self;
+            while let AST::Add(l, r) = t {
+                ls = if let Some(o) = ls {
+                    Some(AST::Add(o, l).to_box())
+                } else {
+                    Some(l)
+                };
+                t = *r;
+            }
+            Some((*ls.unwrap(), t))
         } else {
             None
         }

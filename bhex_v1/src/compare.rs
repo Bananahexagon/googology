@@ -5,9 +5,9 @@ pub fn le(s: &AST, t: &AST) -> bool {
 }
 
 pub fn lt(s: &AST, t: &AST) -> bool {
-    if t == &AST::Zero {
+    if let AST::Zero = t {
         false
-    } else if s == &AST::Zero {
+    } else if let AST::Zero = s {
         true
     } else if let AST::Add(a, b) = s {
         if let AST::Add(c, d) = t {
@@ -20,22 +20,22 @@ pub fn lt(s: &AST, t: &AST) -> bool {
             unreachable!()
         }
     } else if let AST::Psi(a) = s {
-        if let AST::Add(c, _) = t {
-            le(s, c)
-        } else if let AST::Psi(c) = t {
-            lt(s, c)
-        }else if let AST::Mahlo(_) = t {
+        if let AST::Add(b, _) = t {
+            le(s, b)
+        } else if let AST::Psi(b) = t {
+            lt(a, b)
+        } else if let AST::Mahlo(_) = t {
             true
         } else {
             unreachable!()
         }
     } else if let AST::Mahlo(a) = s {
-        if let AST::Add(c, _) = t {
-            le(s, c)
+        if let AST::Add(b, _) = t {
+            le(s, b)
         } else if let AST::Psi(_) = t {
             false
-        }else if let AST::Mahlo(c) = t {
-            lt(a, c)
+        } else if let AST::Mahlo(b) = t {
+            lt(a, b)
         } else {
             unreachable!()
         }
