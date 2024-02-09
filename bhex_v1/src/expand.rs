@@ -43,17 +43,21 @@ pub fn nth(s: AST, t: AST) -> AST {
                                     } else {
                                         *a.clone()
                                     };
-                                    let ai = if let AST::Psi(u) = ar {*u} else {unimplemented!()};
+                                    let ai = if let AST::Psi(u) = ar {
+                                        *u
+                                    } else {
+                                        unreachable!()
+                                    };
                                     r = Some(if let Some((c, _)) = ai.clone().t_and_pt() {
-                                        AST::Psi(
+                                        AST::Psi(AST::Psi(
                                             AST::Add(
                                                 c.to_box(),
                                                 AST::Psi(nth(*b, *g).to_box()).to_box(),
                                             )
                                             .to_box(),
-                                        )
+                                        ).to_box())
                                     } else {
-                                        AST::Psi(AST::Psi(nth(*b, *g).to_box()).to_box())
+                                        AST::Psi(AST::Psi(AST::Psi(nth(*b, *g).to_box()).to_box()).to_box())
                                     })
                                 }
                                 _ => (),
