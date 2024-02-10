@@ -4,7 +4,7 @@ mod parser;
 mod types;
 mod util;
 
-use expand::nth;
+use expand::{nth, dom};
 use types::AST;
 use util::Either;
 use wasm_bindgen::prelude::*;
@@ -32,7 +32,8 @@ fn main(code: &str) -> Result<Vec<AST>, String> {
         for ast in asts {
             r.push(match ast {
                 Either::Left(a) => a,
-                Either::Right((b, n)) => nth(b, n),
+                Either::Right(Either::Left(d)) => dom(&d),
+                Either::Right(Either::Right((b, n))) => nth(b, n),
             })
         }
         Ok(r)
