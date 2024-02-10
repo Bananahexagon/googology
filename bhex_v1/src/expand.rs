@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{compare::lt, types::AST};
 
 pub fn nth(s: AST, t: AST) -> AST {
@@ -31,50 +33,53 @@ pub fn nth(s: AST, t: AST) -> AST {
             } else {
                 if lt(&dom(&a), &s) {
                     AST::Psi(nth(*a, t).to_box())
-                } else if let AST::Psi(b) = d {
+                } else if let AST::Psi(_) = d {
                     //崩壊ゾーン
-                    if dom(&b) == AST::mahlo() {
-                        let mut r = None;
-                        if t.is_non_zero() {
-                            match nth(s, nth(t, AST::Zero)) {
-                                AST::Psi(g) => {
-                                    let ar = if let Some((_, r)) = a.clone().t_and_pt() {
-                                        r
-                                    } else {
-                                        *a.clone()
-                                    };
-                                    let ai = if let AST::Psi(u) = ar {
-                                        *u
-                                    } else {
-                                        unreachable!()
-                                    };
-                                    r = Some(if let Some((c, _)) = ai.clone().t_and_pt() {
-                                        AST::Psi(AST::Psi(
-                                            AST::Add(
-                                                c.to_box(),
-                                                AST::Psi(nth(*b, *g).to_box()).to_box(),
-                                            )
-                                            .to_box(),
-                                        ).to_box())
-                                    } else {
-                                        AST::Psi(AST::Psi(AST::Psi(nth(*b, *g).to_box()).to_box()).to_box())
-                                    })
-                                }
-                                _ => (),
-                            }
-                        }
-                        r.unwrap_or(AST::Psi(nth(*a, AST::Zero).to_box()))
+                    if let Some(AST::Psi(g)) = if t.is_non_zero() {
+                        Some(nth(s, nth(t.clone(), AST::Zero)))
                     } else {
-                        let mut r = None;
-                        if t.is_non_zero() {
-                            match nth(s, nth(t, AST::Zero)) {
-                                AST::Psi(g) => {
-                                    r = Some(AST::Psi(nth(*a.clone(), AST::Psi(g)).to_box()))
+                        None
+                    } {
+                        if let (al, Some((il, _))) = {
+                            let (al, ar) = if let Some((l, r)) = a.clone().t_and_pt() {
+                                (l, r)
+                            } else {
+                                (VecDeque::new(), *a.clone())
+                            };
+                            let ari = if let AST::Psi(i) = ar {
+                                i
+                            } else {
+                                unreachable!()
+                            };
+                            let il_ir = ari.t_and_pt();
+                            (
+                                al,
+                                if let Some((_, ir)) = &il_ir {
+                                    if ir == &AST::mahlo() {
+                                        il_ir
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                },
+                            )
+                        } {
+                            let r = {
+                                let mut il = il;
+                                if g != AST::Zero.to_box() {
+                                    il.push_back(*g);
                                 }
-                                _ => (),
-                            }
+                                AST::q_to_add(il)
+                            };
+                            let mut al = al;
+                            al.push_back(r);
+                            AST::Psi(AST::Psi(AST::q_to_add(al).to_box()).to_box())
+                        } else {
+                            AST::Psi(nth(*a, AST::Psi(g)).to_box())
                         }
-                        r.unwrap_or(AST::Psi(nth(*a, AST::Zero).to_box()))
+                    } else {
+                        AST::Psi(nth(*a, AST::Zero).to_box())
                     }
                 } else {
                     //結局正則基数になるパターン

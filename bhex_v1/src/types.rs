@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 #[derive(Debug, Clone, PartialEq)]
 
 pub enum AST {
@@ -57,7 +59,7 @@ impl AST {
                     if a == &AST::Zero.to_box() {
                         "M".to_string()
                     } else {
-                        format!("M({})", a.to_string())
+                        format!("m({})", a.to_string())
                     }
                 }
             }
@@ -97,21 +99,25 @@ impl AST {
             None
         }
     }
-    pub fn t_and_pt(self) -> Option<(Self, Self)> {
+    pub fn t_and_pt(self) -> Option<(VecDeque<Self>, Self)> {
         if let AST::Add(_, _) = self {
-            let mut ls = None;
+            let mut ls = VecDeque::new();
             let mut t = self;
             while let AST::Add(l, r) = t {
-                ls = if let Some(o) = ls {
-                    Some(AST::Add(o, l).to_box())
-                } else {
-                    Some(l)
-                };
+                ls.push_back(*l);
                 t = *r;
             }
-            Some((*ls.unwrap(), t))
+            Some((ls, t))
         } else {
             None
+        }
+    }
+    pub fn q_to_add(v: VecDeque<Self>) -> Self {
+        let mut v = v;
+        if v.len() == 1 {
+            v.pop_front().unwrap()
+        } else {
+            Self::Add(v.pop_front().unwrap().to_box(), Self::q_to_add(v).to_box())
         }
     }
 }
