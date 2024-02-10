@@ -40,7 +40,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                     } else {
                         None
                     } {
-                        if let (al, Some((il, _))) = {
+                        if let (al, Some((il, ir))) = {
                             let (al, ar) = if let Some((l, r)) = a.clone().t_and_pt() {
                                 (l, r)
                             } else {
@@ -51,24 +51,29 @@ pub fn nth(s: AST, t: AST) -> AST {
                             } else {
                                 unreachable!()
                             };
-                            let il_ir = ari.t_and_pt();
+                            let il_ir = ari.clone().t_and_pt();
                             (
                                 al,
                                 if let Some((_, ir)) = &il_ir {
-                                    if ir == &AST::mahlo() {
+                                    if dom(&ir) == AST::mahlo() {
                                         il_ir
                                     } else {
                                         None
                                     }
                                 } else {
-                                    None
+                                    if dom(&ari) == AST::mahlo() && *ari != AST::mahlo() {
+                                        Some((VecDeque::new(), *ari))
+                                    } else {
+                                        None
+                                    }
                                 },
                             )
                         } {
                             let r = {
                                 let mut il = il;
-                                if g != AST::Zero.to_box() {
-                                    il.push_back(*g);
+                                let u = nth(ir, *g);
+                                if u != AST::Zero {
+                                    il.push_back(u);
                                 }
                                 AST::q_to_add(il)
                             };
