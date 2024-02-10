@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 
 pub enum AST {
     Psi(Box<AST>),
-    Mahlo(Box<AST>),
+    Card(Box<AST>),
     Add(Box<AST>, Box<AST>),
     Zero,
 }
@@ -20,7 +20,10 @@ impl AST {
         Self::Psi(Self::mahlo().to_box())
     }
     pub fn mahlo() -> Self {
-        Self::Mahlo(Self::Zero.to_box())
+        Self::Psi(Self::card().to_box())
+    }
+    pub fn card() -> Self {
+        Self::Card(Self::Zero.to_box())
     }
     pub fn to_box(self) -> Box<Self> {
         Box::new(self)
@@ -34,7 +37,7 @@ impl AST {
                 b._to_json()
             ),
             Self::Psi(a) => format!(r#"{{ type: "psi", a: {} }}"#, a._to_json(),),
-            Self::Mahlo(a) => format!(r#"{{ type: "mahlo", a: {} }}"#, a._to_json(),),
+            Self::Card(a) => format!(r#"{{ type: "card", a: {} }}"#, a._to_json(),),
         }
     }
     pub fn to_string(&self) -> String {
@@ -51,15 +54,17 @@ impl AST {
                         "w".to_string()
                     } else if self == &AST::aleph() {
                         "W".to_string()
+                    }else if self == &AST::mahlo() {
+                        "M".to_string()
                     } else {
                         format!("p({})", a.to_string())
                     }
                 }
-                Self::Mahlo(a) => {
+                Self::Card(a) => {
                     if a == &AST::Zero.to_box() {
-                        "M".to_string()
+                        "C".to_string()
                     } else {
-                        format!("m({})", a.to_string())
+                        format!("c({})", a.to_string())
                     }
                 }
             }
@@ -99,17 +104,17 @@ impl AST {
             None
         }
     }
-    pub fn t_and_pt(self) -> Option<(VecDeque<Self>, Self)> {
+    pub fn t_and_pt(&self) -> (VecDeque<&Box<Self>>, &Self) {
         if let AST::Add(_, _) = self {
             let mut ls = VecDeque::new();
             let mut t = self;
             while let AST::Add(l, r) = t {
-                ls.push_back(*l);
-                t = *r;
+                ls.push_back(l);
+                t = r;
             }
-            Some((ls, t))
+            (ls, t)
         } else {
-            None
+            (VecDeque::new(), self)
         }
     }
     pub fn q_to_add(v: VecDeque<Self>) -> Self {

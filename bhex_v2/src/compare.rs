@@ -14,7 +14,7 @@ pub fn lt(s: &AST, t: &AST) -> bool {
             (a == c && lt(b, d)) || lt(a, c)
         } else if let AST::Psi(_) = t {
             lt(a, t)
-        } else if let AST::Mahlo(_) = t {
+        } else if let AST::Card(_) = t {
             lt(a, t)
         } else {
             unreachable!()
@@ -24,17 +24,17 @@ pub fn lt(s: &AST, t: &AST) -> bool {
             le(s, b)
         } else if let AST::Psi(b) = t {
             lt(a, b)
-        } else if let AST::Mahlo(_) = t {
+        } else if let AST::Card(_) = t {
             true
         } else {
             unreachable!()
         }
-    } else if let AST::Mahlo(a) = s {
+    } else if let AST::Card(a) = s {
         if let AST::Add(b, _) = t {
             le(s, b)
         } else if let AST::Psi(_) = t {
             false
-        } else if let AST::Mahlo(b) = t {
+        } else if let AST::Card(b) = t {
             lt(a, b)
         } else {
             unreachable!()
