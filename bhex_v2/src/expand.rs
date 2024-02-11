@@ -42,7 +42,45 @@ pub fn nth(s: AST, t: AST) -> AST {
                 {
                     t
                 } else {
-                    unimplemented!()
+                    if let Some(AST::Psi(g)) = if t.is_non_zero() {
+                        Some(nth(s, nth(t.clone(), AST::Zero)))
+                    } else {
+                        None
+                    } {
+                        if let (al, Some((il, ir))) = {
+                            let (al, ar) = a.clone().t_and_pt();
+                            let ari = if let AST::Psi(i) = ar {
+                                i
+                            } else {
+                                unreachable!()
+                            };
+                            let il_ir = ari.clone().t_and_pt();
+                            (
+                                al,
+                                if dom(&il_ir.1) == AST::mahlo() {
+                                    Some(il_ir)
+                                } else {
+                                    None
+                                },
+                            )
+                        } {
+                            let r = {
+                                let mut il = il;
+                                let u = nth(ir.clone(), *g);
+                                if u != AST::Zero {
+                                    il.push_back(u);
+                                }
+                                AST::q_to_add(il)
+                            };
+                            let mut al = al;
+                            al.push_back(r);
+                            AST::Psi(AST::Psi(AST::q_to_add(al).to_box()).to_box())
+                        } else {
+                            AST::Psi(nth(*a, AST::Psi(g)).to_box())
+                        }
+                    } else {
+                        AST::Psi(nth(*a, AST::Zero).to_box())
+                    }
                 }
             }
         }

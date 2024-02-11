@@ -104,13 +104,13 @@ impl AST {
             None
         }
     }
-    pub fn t_and_pt(&self) -> (VecDeque<&Box<Self>>, &Self) {
+    pub fn t_and_pt(self) -> (VecDeque<Self>, Self) {
         if let AST::Add(_, _) = self {
             let mut ls = VecDeque::new();
             let mut t = self;
             while let AST::Add(l, r) = t {
-                ls.push_back(l);
-                t = r;
+                ls.push_back(*l);
+                t = *r;
             }
             (ls, t)
         } else {
