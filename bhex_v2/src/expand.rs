@@ -16,10 +16,10 @@ pub fn nth(s: AST, t: AST) -> AST {
             }
         }
         AST::Psi(a) => {
-            let d = dom(&a).0;
-            if d == AST::Zero {
+            let d = dom(&a);
+            if d.0== AST::Zero {
                 t
-            } else if d == AST::one() {
+            } else if d.0 == AST::one() {
                 if t.is_successor() {
                     AST::Add(
                         nth(s.clone(), nth(t, AST::Zero)).to_box(),
@@ -28,70 +28,12 @@ pub fn nth(s: AST, t: AST) -> AST {
                 } else {
                     AST::Psi(nth(*a, AST::Zero).to_box())
                 }
+            } else if d.1 == 0 {
+                AST::Psi(nth(*a, t).to_box())
+            } else if d.1 == 3 {
+                unimplemented!()
             } else {
-                if lt(&d, &s) {
-                    AST::Psi(nth(*a, t).to_box())
-                } else if d == AST::card()
-                    || (if let AST::Psi(b) = a.clone().t_and_pt().1 {
-                        dom(&b).0 == AST::card()
-                    } else {
-                        false
-                    })
-                {
-                    t
-                } else {
-                    if let Some(AST::Psi(g)) = if t.is_non_zero() {
-                        Some(nth(s, nth(t.clone(), AST::Zero)))
-                    } else {
-                        None
-                    } {
-                        let (al, (il, (iil, iir))) = {
-                            let (al, ar) = a.clone().t_and_pt();
-                            let ari = if let AST::Psi(i) = ar {
-                                i
-                            } else {
-                                unreachable!()
-                            };
-                            let (il, ir) = ari.t_and_pt();
-                            let iri = if let AST::Psi(i) = ir {
-                                i
-                            } else {
-                                unreachable!()
-                            };
-                            let (iil, iir) = iri.t_and_pt();
-                            (al, (il, (iil, iir)))
-                        };
-                        println!(
-                            "({:?}+p({:?}+p({:?}+{})))",
-                            //a.to_string(),
-                            al.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
-                            il.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
-                            iil.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
-                            iir.to_string()
-                        );
-                        let v = [al, il, iil];
-                        if let Some(i) = v.iter().position(|v| !v.is_empty()) {
-                            let mut r = iir.clone();
-                            for (j, l) in v.into_iter().enumerate().rev() {
-                                let mut l = l;
-                                let n = if i == j {
-                                    unimplemented!()
-                                } else {
-                                    r
-                                };
-                                if n != AST::Zero {
-                                    l.push_back(n);
-                                }
-                                r = AST::Psi(AST::q_to_add(l).to_box());
-                            }
-                            r
-                        } else {
-                            AST::Psi(nth(*a, AST::Psi(g)).to_box())
-                        }
-                    } else {
-                        AST::Psi(nth(*a, AST::Zero).to_box())
-                    }
-                }
+                t
             }
         }
         AST::Card(a) => {
