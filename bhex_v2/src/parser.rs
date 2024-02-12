@@ -33,9 +33,9 @@ rule pt() -> AST
     / _ v: omega()    _ { v }
     / _ v: aleph()    _ { v }
     / _ v: mahlo()    _ { v }
-    / _ v: card()  _ { v }
+    / _ v: card()     _ { v }
     / _ v: psi()      _ { v }
-    / _ v: card_f()  _ { v }
+    / _ v: card_f()   _ { v }
 
 rule integer() -> AST
     = n: $(['0'] / (['1'..='9']['0'..='9']*)) {

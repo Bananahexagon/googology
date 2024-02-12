@@ -32,7 +32,7 @@ fn main(code: &str) -> Result<Vec<AST>, String> {
         for ast in asts {
             r.push(match ast {
                 Either::Left(a) => a,
-                Either::Right(Either::Left(d)) => dom(&d),
+                Either::Right(Either::Left(d)) => dom(&d).0,
                 Either::Right(Either::Right((b, n))) => nth(b, n),
             })
         }

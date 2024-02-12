@@ -54,7 +54,7 @@ impl AST {
                         "w".to_string()
                     } else if self == &AST::aleph() {
                         "W".to_string()
-                    }else if self == &AST::mahlo() {
+                    } else if self == &AST::mahlo() {
                         "M".to_string()
                     } else {
                         format!("p({})", a.to_string())
@@ -119,10 +119,13 @@ impl AST {
     }
     pub fn q_to_add(v: VecDeque<Self>) -> Self {
         let mut v = v;
-        if v.len() == 1 {
-            v.pop_front().unwrap()
-        } else {
-            Self::Add(v.pop_front().unwrap().to_box(), Self::q_to_add(v).to_box())
+        match v.len() {
+            0 => AST::Zero,
+            1 => v.pop_front().unwrap(),
+            _ => Self::Add(
+                v.pop_front().unwrap().to_box(),
+                Self::q_to_add(v).to_box(),
+            ),
         }
     }
 }

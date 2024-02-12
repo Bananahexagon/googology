@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use crate::{compare::lt, types::AST};
 
 pub fn nth(s: AST, t: AST) -> AST {
@@ -18,7 +16,7 @@ pub fn nth(s: AST, t: AST) -> AST {
             }
         }
         AST::Psi(a) => {
-            let d = dom(&a);
+            let d = dom(&a).0;
             if d == AST::Zero {
                 t
             } else if d == AST::one() {
@@ -31,11 +29,11 @@ pub fn nth(s: AST, t: AST) -> AST {
                     AST::Psi(nth(*a, AST::Zero).to_box())
                 }
             } else {
-                if lt(&dom(&a), &s) {
+                if lt(&d, &s) {
                     AST::Psi(nth(*a, t).to_box())
                 } else if d == AST::card()
                     || (if let AST::Psi(b) = a.clone().t_and_pt().1 {
-                        dom(&b) == AST::card()
+                        dom(&b).0 == AST::card()
                     } else {
                         false
                     })
@@ -47,34 +45,51 @@ pub fn nth(s: AST, t: AST) -> AST {
                     } else {
                         None
                     } {
-                        if let (al, Some((il, ir))) = {
+                        let (al, (il, (iil, iir))) = {
                             let (al, ar) = a.clone().t_and_pt();
                             let ari = if let AST::Psi(i) = ar {
                                 i
                             } else {
                                 unreachable!()
                             };
-                            let il_ir = ari.clone().t_and_pt();
-                            (
-                                al,
-                                if dom(&il_ir.1) == AST::mahlo() {
-                                    Some(il_ir)
-                                } else {
-                                    None
-                                },
-                            )
-                        } {
-                            let r = {
-                                let mut il = il;
-                                let u = nth(ir.clone(), *g);
-                                if u != AST::Zero {
-                                    il.push_back(u);
-                                }
-                                AST::q_to_add(il)
+                            let (il, ir) = ari.t_and_pt();
+                            let iri = if let AST::Psi(i) = ir {
+                                i
+                            } else {
+                                unreachable!()
                             };
-                            let mut al = al;
-                            al.push_back(r);
-                            AST::Psi(AST::Psi(AST::q_to_add(al).to_box()).to_box())
+                            let (iil, iir) = iri.t_and_pt();
+                            (al, (il, (iil, iir)))
+                        };
+                        println!(
+                            "({:?}+p({:?}+p({:?}+{})))",
+                            al.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
+                            il.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
+                            iil.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
+                            iir.to_string()
+                        );
+                        let v = [al, il, iil];
+                        if let Some(i) = v.iter().position(|v| !v.is_empty()) {
+                            let mut r = iir.clone();
+                            for (j, l) in v.into_iter().enumerate().rev() {
+                                let mut l = l;
+                                let n = if i == j {
+                                    if dom(&iir).0 == AST::card() && j == 1 {
+                                        nth(r, *g.clone())
+                                    //} else if iir == AST::mahlo() && j == 2{
+                                    //    AST::Psi(nth(r, *g.clone()).to_box())
+                                    } else {
+                                        AST::Psi(nth(r, *g.clone()).to_box())
+                                    }
+                                } else {
+                                    r
+                                };
+                                if n != AST::Zero {
+                                    l.push_back(n);
+                                }
+                                r = AST::Psi(AST::q_to_add(l).to_box());
+                            }
+                            r
                         } else {
                             AST::Psi(nth(*a, AST::Psi(g)).to_box())
                         }
@@ -87,7 +102,7 @@ pub fn nth(s: AST, t: AST) -> AST {
         AST::Card(a) => {
             if *a == AST::Zero {
                 t
-            } else if dom(&a) == AST::one() {
+            } else if dom(&a).0 == AST::one() {
                 AST::omega()
             } else {
                 AST::Card(nth(*a, t).to_box())
@@ -96,33 +111,29 @@ pub fn nth(s: AST, t: AST) -> AST {
     }
 }
 
-pub fn dom(s: &AST) -> AST {
+pub fn dom(s: &AST) -> (AST, u32) {
     match s {
-        AST::Zero => AST::Zero,
+        AST::Zero => (AST::Zero, 0),
         AST::Add(_, b) => dom(b),
         AST::Psi(a) => {
-            if **a == AST::Zero
-                || dom(a) == AST::card()
-                || if let AST::Psi(b) = a.t_and_pt().1 {
-                    dom(b) == AST::card()
-                } else {
-                    false
-                }
-            {
-                s.clone()
-            } else if dom(a) == AST::one() {
-                AST::omega()
-            } else if lt(&dom(&a), s) {
-                dom(a)
+            let d = dom(a);
+            if **a == AST::Zero {
+                (AST::one(), 0)
+            } else if d.0 == AST::one() {
+                (AST::omega(), 0)
+            } else if lt(&d.0, s) {
+                d
+            } else if d.0 == a.clone().t_and_pt().1 && d.1 <= 2 {
+                (s.clone(), d.1 + 1)
             } else {
-                AST::omega()
+                (AST::omega(), 0)
             }
         }
         AST::Card(a) => {
             if **a == AST::Zero {
-                AST::card()
-            } else if dom(&a) == AST::one() {
-                AST::omega()
+                (AST::card(), 1)
+            } else if dom(&a).0 == AST::one() {
+                (AST::omega(), 0)
             } else {
                 dom(a)
             }
