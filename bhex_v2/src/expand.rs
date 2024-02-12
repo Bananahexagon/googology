@@ -36,7 +36,31 @@ pub fn nth(s: AST, t: AST) -> AST {
                 } else {
                     None
                 } {
-                    AST::Psi(nth(*a, AST::Psi(g)).to_box())
+                    let (l, il, ir) = {
+                        let (l, r) = a.clone().t_and_pt();
+                        let ri = if let AST::Psi(i) = r {
+                            i
+                        } else {
+                            unimplemented!()
+                        };
+                        let (il, ir) = ri.t_and_pt();
+                        (l, il, ir)
+                    };
+                    if !l.is_empty() {
+                        let r = {
+                        let mut il = il;
+                        let u = nth(ir, *g);
+                        if u != AST::Zero {
+                            il.push_back(u);
+                        }
+                        AST::q_to_add(il)
+                    };
+                    let mut l = l;
+                    l.push_back(r);
+                        AST::Psi(AST::Psi(AST::q_to_add(l).to_box()).to_box())
+                    } else {
+                        AST::Psi(nth(*a, AST::Psi(g)).to_box())
+                    }
                 } else {
                     AST::Psi(nth(*a, AST::Zero).to_box())
                 }
