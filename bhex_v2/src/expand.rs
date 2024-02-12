@@ -63,6 +63,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                         };
                         println!(
                             "({:?}+p({:?}+p({:?}+{})))",
+                            //a.to_string(),
                             al.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
                             il.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
                             iil.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
@@ -74,13 +75,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                             for (j, l) in v.into_iter().enumerate().rev() {
                                 let mut l = l;
                                 let n = if i == j {
-                                    if dom(&iir).0 == AST::card() && j == 1 {
-                                        nth(r, *g.clone())
-                                    //} else if iir == AST::mahlo() && j == 2{
-                                    //    AST::Psi(nth(r, *g.clone()).to_box())
-                                    } else {
-                                        AST::Psi(nth(r, *g.clone()).to_box())
-                                    }
+                                    unimplemented!()
                                 } else {
                                     r
                                 };
@@ -123,7 +118,7 @@ pub fn dom(s: &AST) -> (AST, u32) {
                 (AST::omega(), 0)
             } else if lt(&d.0, s) {
                 d
-            } else if d.0 == a.clone().t_and_pt().1 && d.1 <= 2 {
+            } else if d.1 <= 2 {
                 (s.clone(), d.1 + 1)
             } else {
                 (AST::omega(), 0)
@@ -131,7 +126,7 @@ pub fn dom(s: &AST) -> (AST, u32) {
         }
         AST::Card(a) => {
             if **a == AST::Zero {
-                (AST::card(), 1)
+                (s.clone(), 1)
             } else if dom(&a).0 == AST::one() {
                 (AST::omega(), 0)
             } else {
