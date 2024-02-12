@@ -17,7 +17,7 @@ pub fn nth(s: AST, t: AST) -> AST {
         }
         AST::Psi(a) => {
             let d = dom(&a);
-            if d.0== AST::Zero {
+            if d.0 == AST::Zero {
                 t
             } else if d.0 == AST::one() {
                 if t.is_successor() {
@@ -31,7 +31,15 @@ pub fn nth(s: AST, t: AST) -> AST {
             } else if d.1 == 0 {
                 AST::Psi(nth(*a, t).to_box())
             } else if d.1 == 3 {
-                unimplemented!()
+                if let Some(AST::Psi(g)) = if t.is_non_zero() {
+                    Some(nth(s, nth(t.clone(), AST::Zero)))
+                } else {
+                    None
+                } {
+                    AST::Psi(nth(*a, AST::Psi(g)).to_box())
+                } else {
+                    AST::Psi(nth(*a, AST::Zero).to_box())
+                }
             } else {
                 t
             }
