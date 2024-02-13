@@ -28,7 +28,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                 } else {
                     AST::Psi(nth(*a, AST::Zero).to_box())
                 }
-            } else if d.1 == 0 {
+            } else if d.1 == 0 || lt(&d.0, &s) {
                 AST::Psi(nth(*a, t).to_box())
             } else if d.1 == 3 {
                 if let Some(AST::Psi(g)) = if t.is_non_zero() {
@@ -36,7 +36,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                 } else {
                     None
                 } {
-                    let (l, il, ir) = {
+                    if let Some((l, il, ir)) = {
                         let (l, r) = a.clone().t_and_pt();
                         let ri = if let AST::Psi(i) = r {
                             i
@@ -44,19 +44,22 @@ pub fn nth(s: AST, t: AST) -> AST {
                             unimplemented!()
                         };
                         let (il, ir) = ri.t_and_pt();
-                        (l, il, ir)
-                    };
-                    if !l.is_empty() {
-                        let r = {
-                        let mut il = il;
-                        let u = nth(ir, *g);
-                        if u != AST::Zero {
-                            il.push_back(u);
+                        if dom(&ir).0 == AST::mahlo() && !(il.is_empty() && ir == AST::mahlo()) {
+                            Some((l, il, ir))
+                        } else {
+                            None
                         }
-                        AST::q_to_add(il)
-                    };
-                    let mut l = l;
-                    l.push_back(r);
+                    } {
+                        let r = {
+                            let mut il = il;
+                            let u = nth(ir, *g);
+                            if u != AST::Zero {
+                                il.push_back(u);
+                            }
+                            AST::q_to_add(il)
+                        };
+                        let mut l = l;
+                        l.push_back(r);
                         AST::Psi(AST::Psi(AST::q_to_add(l).to_box()).to_box())
                     } else {
                         AST::Psi(nth(*a, AST::Psi(g)).to_box())
