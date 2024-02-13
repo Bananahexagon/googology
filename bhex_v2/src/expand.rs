@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{compare::lt, types::AST};
 
 pub fn nth(s: AST, t: AST) -> AST {
@@ -36,33 +38,91 @@ pub fn nth(s: AST, t: AST) -> AST {
                 } else {
                     None
                 } {
-                    if let Some((l, il, ir)) = {
+                    let (p, (mut l, mut il, mut iil, iir)) = {
                         let (l, r) = a.clone().t_and_pt();
-                        let ri = if let AST::Psi(i) = r {
+                        let ri = if let AST::Psi(i) = r { i } else { panic!() };
+                        let (il, ir) = ri.t_and_pt();
+                        let iri = if let AST::Psi(i) = ir.clone() {
                             i
                         } else {
-                            unimplemented!()
+                            panic!()
                         };
-                        let (il, ir) = ri.t_and_pt();
-                        if dom(&ir).0 == AST::mahlo() && !(il.is_empty() && ir == AST::mahlo()) {
-                            Some((l, il, ir))
+                        let (iil, iir) = iri.t_and_pt();
+                        if dom(&iir).0 == AST::card() && !(iil.is_empty() && iir == AST::card()) {
+                            (2, (l, il, iil, iir))
+                        } else if dom(&ir).0 == AST::mahlo()
+                            && !(il.is_empty() && ir == AST::mahlo())
+                        {
+                            (1, (l, il, iil, iir))
                         } else {
-                            None
+                            (0, (l, il, iil, iir))
                         }
-                    } {
-                        let r = {
-                            let mut il = il;
-                            let u = nth(ir, *g);
-                            if u != AST::Zero {
-                                il.push_back(u);
+                    };
+                    println!(
+                        "{} p({:?} p({:?} p({:?} {}))) {} {} {}",
+                        p,
+                        l.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
+                        il.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
+                        iil.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
+                        iir.to_string(),
+                        dom(&iir).0.to_string(),
+                        dom(&iir).1,
+                        g.to_string()
+                    );
+                    if p == 2 {
+                        let (_gl, h) = if *g != AST::Zero {
+                            let (gl, gr) = g.t_and_pt();
+                            if let AST::Psi(h) = gr {
+                                (gl, h)
+                            } else {
+                                unimplemented!()
                             }
-                            AST::q_to_add(il)
+                        } else {
+                            (VecDeque::new(), AST::Zero.to_box())
                         };
-                        let mut l = l;
+                        let ir = AST::Psi(
+                            {
+                                let u = nth(iir, *h);
+                                if u != AST::Zero {
+                                    iil.push_back(u);
+                                }
+                                AST::q_to_add(iil)
+                            }
+                            .to_box(),
+                        );
+                        let r = AST::Psi(
+                            {
+                                il.push_back(ir);
+                                AST::q_to_add(il)
+                            }
+                            .to_box(),
+                        );
                         l.push_back(r);
-                        AST::Psi(AST::Psi(AST::q_to_add(l).to_box()).to_box())
-                    } else {
+                        AST::Psi(AST::q_to_add(l).to_box())
+                    } else if p == 1 {
+                        let ir = AST::Psi(
+                            {
+                                iil.push_back(iir);
+                                AST::q_to_add(iil)
+                            }
+                            .to_box(),
+                        );
+                        let r = AST::Psi(
+                            {
+                                let u = nth(ir, *g);
+                                if u != AST::Zero {
+                                    il.push_back(u);
+                                }
+                                AST::q_to_add(il)
+                            }
+                            .to_box(),
+                        );
+                        l.push_back(r);
+                        AST::Psi(AST::q_to_add(l).to_box())
+                    } else if p == 0 {
                         AST::Psi(nth(*a, AST::Psi(g)).to_box())
+                    } else {
+                        unimplemented!()
                     }
                 } else {
                     AST::Psi(nth(*a, AST::Zero).to_box())
