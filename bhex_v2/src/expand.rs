@@ -58,17 +58,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                             (0, (l, il, iil, iir))
                         }
                     };
-                    println!(
-                        "{} p({:?} p({:?} p({:?} {}))) {} {} {}",
-                        p,
-                        l.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
-                        il.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
-                        iil.iter().map(|e| e.to_string()).collect::<Vec<_>>(),
-                        iir.to_string(),
-                        dom(&iir).0.to_string(),
-                        dom(&iir).1,
-                        g.to_string()
-                    );
+                    
                     if p == 2 {
                         let (_gl, h) = if *g != AST::Zero {
                             let (gl, gr) = g.t_and_pt();
@@ -82,7 +72,7 @@ pub fn nth(s: AST, t: AST) -> AST {
                         };
                         let ir = AST::Psi(
                             {
-                                let u = nth(iir, *h);
+                                let u = nth(iir, h.t_and_pt().1);
                                 if u != AST::Zero {
                                     iil.push_back(u);
                                 }
