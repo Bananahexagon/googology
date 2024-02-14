@@ -24,7 +24,7 @@ rule nth() -> (AST, AST)
 rule dom() -> AST
     = v: ast() _ "dom" { v }
 
-rule ast() -> AST
+pub rule ast() -> AST
     = _ v: add() _ { v }
     / _ v: pt()  _ { v }
 
